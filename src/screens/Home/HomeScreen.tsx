@@ -13,6 +13,10 @@ import { useNavigation } from '@react-navigation/native';
 // Import additional screens
 import OfflineModeScreen from '../Offline/OfflineModeScreen';
 import LanguageAssistanceScreen from '../Language/LanguageAssistanceScreen';
+import EcoFriendlyScreen from '../Eco/EcoFriendlyScreen';
+import GamificationScreen from '../Gamification/GamificationScreen';
+import EventsScreen from '../Events/EventsScreen';
+import PackingScreen from '../Packing/PackingScreen';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -76,6 +80,18 @@ export default function HomeScreen() {
         break;
       case 'language':
         Component = LanguageAssistanceScreen;
+        break;
+      case 'eco':
+        Component = EcoFriendlyScreen;
+        break;
+      case 'gamification':
+        Component = GamificationScreen;
+        break;
+      case 'events':
+        Component = EventsScreen;
+        break;
+      case 'packing':
+        Component = PackingScreen;
         break;
       default:
         return null;
