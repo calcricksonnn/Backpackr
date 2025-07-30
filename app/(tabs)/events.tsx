@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Button, Card, FAB, Portal, Modal, TextInput, Chip } from 'react-native-paper';
 import MapView, { Marker, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { notificationService, useNearbyEventNotifications } from '../../src/services/NotificationService';
+import EventChat from '../../src/components/EventChat';
 
 interface Event {
   id: string;
@@ -85,6 +87,7 @@ export default function Events() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showEventChat, setShowEventChat] = useState(false);
   
   // New event form state
   const [newEvent, setNewEvent] = useState({
@@ -97,6 +100,9 @@ export default function Events() {
     tags: '',
   });
   const [newEventLocation, setNewEventLocation] = useState<{latitude: number, longitude: number} | null>(null);
+
+  // Initialize notification service
+  const { checkAndNotify } = useNearbyEventNotifications(events, location);
 
   useEffect(() => {
     (async () => {
@@ -114,8 +120,23 @@ export default function Events() {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       });
+
+      // Request notification permissions
+      await notificationService.requestNotificationPermissions();
     })();
   }, []);
+
+  // Check for nearby events every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkAndNotify();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    // Initial check
+    checkAndNotify();
+
+    return () => clearInterval(interval);
+  }, [checkAndNotify]);
 
   const handleMarkerPress = (event: Event) => {
     setSelectedEvent(event);
@@ -315,6 +336,16 @@ export default function Events() {
               </Card.Content>
               <Card.Actions>
                 <Button onPress={() => setShowEventDetails(false)}>Close</Button>
+                {selectedEvent.attendees.includes('Current User') && (
+                  <Button
+                    onPress={() => {
+                      setShowEventDetails(false);
+                      setShowEventChat(true);
+                    }}
+                  >
+                    Join Chat
+                  </Button>
+                )}
                 <Button
                   mode="contained"
                   onPress={() => handleRSVP(selectedEvent)}
@@ -422,6 +453,24 @@ export default function Events() {
               </Button>
             </View>
           </ScrollView>
+        </Modal>
+      </Portal>
+
+      {/* Event Chat Modal */}
+      <Portal>
+        <Modal
+          visible={showEventChat}
+          onDismiss={() => setShowEventChat(false)}
+          contentContainerStyle={styles.chatModal}
+        >
+          {selectedEvent && (
+            <EventChat
+              eventId={selectedEvent.id}
+              eventTitle={selectedEvent.title}
+              currentUserId="current-user"
+              currentUserName="Current User"
+            />
+          )}
         </Modal>
       </Portal>
     </View>
@@ -540,5 +589,9 @@ const styles = StyleSheet.create({
   createEventButton: {
     flex: 1,
     marginHorizontal: 8,
+  },
+  chatModal: {
+    flex: 1,
+    margin: 0,
   },
 });
