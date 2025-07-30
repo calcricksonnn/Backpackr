@@ -114,6 +114,182 @@ const travelBuddies = [
   }
 ];
 
+const TravelBuddyCard = ({ item, index }: { item: any; index: number }) => {
+  const theme = useTheme();
+  const cardScale = useSharedValue(0);
+
+  useEffect(() => {
+    cardScale.value = withDelay(index * 100, withSpring(1));
+  }, []);
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardScale.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.buddyCard, cardAnimatedStyle]}>
+      <TouchableOpacity activeOpacity={0.9}>
+        <Card style={styles.card} elevation={3}>
+          <LinearGradient
+            colors={[theme.colors.primary + '10', theme.colors.secondary + '05']}
+            style={styles.cardGradient}
+          >
+            <Card.Content style={styles.buddyContent}>
+              <View style={styles.buddyHeader}>
+                <Title style={styles.buddyAvatar}>{item.avatar}</Title>
+                <View style={styles.buddyInfo}>
+                  <Title style={styles.buddyName}>{item.name}</Title>
+                  <View style={styles.locationContainer}>
+                    <MaterialCommunityIcons 
+                      name="map-marker" 
+                      size={12} 
+                      color={theme.colors.primary} 
+                    />
+                    <Paragraph style={styles.buddyLocation}>{item.location}</Paragraph>
+                  </View>
+                  <View style={styles.ratingContainer}>
+                    <MaterialCommunityIcons name="star" size={14} color="#FFD700" />
+                    <Paragraph style={styles.ratingText}>{item.rating}</Paragraph>
+                    <Paragraph style={styles.tripsText}>({item.trips} trips)</Paragraph>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.nextTripContainer}>
+                <Paragraph style={styles.nextTripLabel}>Next Adventure:</Paragraph>
+                <Paragraph style={styles.nextTripText}>{item.nextTrip}</Paragraph>
+              </View>
+
+              <View style={styles.interestsContainer}>
+                <Paragraph style={styles.interestsLabel}>Interests:</Paragraph>
+                <View style={styles.interestsList}>
+                  {item.interests.map((interest: string, interestIndex: number) => (
+                    <Chip
+                      key={interestIndex}
+                      style={styles.interestChip}
+                      textStyle={styles.interestText}
+                    >
+                      {interest}
+                    </Chip>
+                  ))}
+                </View>
+              </View>
+
+              <Button
+                mode="contained"
+                style={styles.connectButton}
+                contentStyle={styles.buttonContent}
+                labelStyle={styles.buttonLabel}
+              >
+                Connect
+              </Button>
+            </Card.Content>
+          </LinearGradient>
+        </Card>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+const PostCard = ({ item, index }: { item: any; index: number }) => {
+  const theme = useTheme();
+  const cardScale = useSharedValue(0);
+  const cardOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    cardScale.value = withDelay(index * 100, withSpring(1));
+    cardOpacity.value = withDelay(index * 100, withTiming(1, { duration: 600 }));
+  }, []);
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardScale.value }],
+    opacity: cardOpacity.value,
+  }));
+
+  return (
+    <Animated.View style={[styles.postCard, cardAnimatedStyle]}>
+      <Card style={styles.card} elevation={3}>
+        <Card.Content style={styles.cardContent}>
+          {/* User Header */}
+          <View style={styles.userHeader}>
+            <View style={styles.userInfo}>
+              <Title style={styles.userAvatar}>{item.user.avatar}</Title>
+              <View style={styles.userDetails}>
+                <Title style={styles.userName}>{item.user.name}</Title>
+                <Paragraph style={styles.userLevel}>{item.user.level}</Paragraph>
+                <View style={styles.locationContainer}>
+                  <MaterialCommunityIcons 
+                    name="map-marker" 
+                    size={12} 
+                    color={theme.colors.primary} 
+                  />
+                  <Paragraph style={styles.userLocation}>{item.user.location}</Paragraph>
+                </View>
+              </View>
+            </View>
+            <Paragraph style={styles.timeAgo}>{item.timeAgo}</Paragraph>
+          </View>
+
+          {/* Post Content */}
+          <Paragraph style={styles.postContent}>{item.content}</Paragraph>
+
+          {/* Images */}
+          <View style={styles.imagesContainer}>
+            {item.images.map((image: string, imageIndex: number) => (
+              <Surface key={imageIndex} style={styles.imageItem} elevation={2}>
+                <Title style={styles.imageEmoji}>{image}</Title>
+              </Surface>
+            ))}
+          </View>
+
+          {/* Tags */}
+          <View style={styles.tagsContainer}>
+            {item.tags.map((tag: string, tagIndex: number) => (
+              <Chip
+                key={tagIndex}
+                style={styles.tagChip}
+                textStyle={styles.tagText}
+              >
+                #{tag}
+              </Chip>
+            ))}
+          </View>
+
+          <Divider style={styles.divider} />
+
+          {/* Actions */}
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
+              <MaterialCommunityIcons 
+                name="heart-outline" 
+                size={20} 
+                color={theme.colors.primary} 
+              />
+              <Paragraph style={styles.actionText}>{item.likes}</Paragraph>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
+              <MaterialCommunityIcons 
+                name="comment-outline" 
+                size={20} 
+                color={theme.colors.primary} 
+              />
+              <Paragraph style={styles.actionText}>{item.comments}</Paragraph>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
+              <MaterialCommunityIcons 
+                name="share-outline" 
+                size={20} 
+                color={theme.colors.primary} 
+              />
+              <Paragraph style={styles.actionText}>Share</Paragraph>
+            </TouchableOpacity>
+          </View>
+        </Card.Content>
+      </Card>
+    </Animated.View>
+  );
+};
+
 export default function CommunityScreen() {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState('posts');
@@ -135,177 +311,11 @@ export default function CommunityScreen() {
   }));
 
   const renderPost = ({ item, index }: { item: any; index: number }) => {
-    const cardScale = useSharedValue(0);
-    const cardOpacity = useSharedValue(0);
-
-    useEffect(() => {
-      cardScale.value = withDelay(index * 100, withSpring(1));
-      cardOpacity.value = withDelay(index * 100, withTiming(1, { duration: 600 }));
-    }, []);
-
-    const cardAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: cardScale.value }],
-      opacity: cardOpacity.value,
-    }));
-
-    return (
-      <Animated.View style={[styles.postCard, cardAnimatedStyle]}>
-        <Card style={styles.card} elevation={3}>
-          <Card.Content style={styles.cardContent}>
-            {/* User Header */}
-            <View style={styles.userHeader}>
-              <View style={styles.userInfo}>
-                <Title style={styles.userAvatar}>{item.user.avatar}</Title>
-                <View style={styles.userDetails}>
-                  <Title style={styles.userName}>{item.user.name}</Title>
-                  <Paragraph style={styles.userLevel}>{item.user.level}</Paragraph>
-                  <View style={styles.locationContainer}>
-                    <MaterialCommunityIcons 
-                      name="map-marker" 
-                      size={12} 
-                      color={theme.colors.primary} 
-                    />
-                    <Paragraph style={styles.userLocation}>{item.user.location}</Paragraph>
-                  </View>
-                </View>
-              </View>
-              <Paragraph style={styles.timeAgo}>{item.timeAgo}</Paragraph>
-            </View>
-
-            {/* Post Content */}
-            <Paragraph style={styles.postContent}>{item.content}</Paragraph>
-
-            {/* Images */}
-            <View style={styles.imagesContainer}>
-              {item.images.map((image: string, imageIndex: number) => (
-                <Surface key={imageIndex} style={styles.imageItem} elevation={2}>
-                  <Title style={styles.imageEmoji}>{image}</Title>
-                </Surface>
-              ))}
-            </View>
-
-            {/* Tags */}
-            <View style={styles.tagsContainer}>
-              {item.tags.map((tag: string, tagIndex: number) => (
-                <Chip
-                  key={tagIndex}
-                  style={styles.tagChip}
-                  textStyle={styles.tagText}
-                >
-                  #{tag}
-                </Chip>
-              ))}
-            </View>
-
-            <Divider style={styles.divider} />
-
-            {/* Actions */}
-            <View style={styles.actionsContainer}>
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons 
-                  name="heart-outline" 
-                  size={20} 
-                  color={theme.colors.primary} 
-                />
-                <Paragraph style={styles.actionText}>{item.likes}</Paragraph>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons 
-                  name="comment-outline" 
-                  size={20} 
-                  color={theme.colors.primary} 
-                />
-                <Paragraph style={styles.actionText}>{item.comments}</Paragraph>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-                <MaterialCommunityIcons 
-                  name="share-outline" 
-                  size={20} 
-                  color={theme.colors.primary} 
-                />
-                <Paragraph style={styles.actionText}>Share</Paragraph>
-              </TouchableOpacity>
-            </View>
-          </Card.Content>
-        </Card>
-      </Animated.View>
-    );
+    return <PostCard item={item} index={index} />;
   };
 
   const renderTravelBuddy = ({ item, index }: { item: any; index: number }) => {
-    const cardScale = useSharedValue(0);
-
-    useEffect(() => {
-      cardScale.value = withDelay(index * 100, withSpring(1));
-    }, []);
-
-    const cardAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: cardScale.value }],
-    }));
-
-    return (
-      <Animated.View style={[styles.buddyCard, cardAnimatedStyle]}>
-        <TouchableOpacity activeOpacity={0.9}>
-          <Card style={styles.card} elevation={3}>
-            <LinearGradient
-              colors={[theme.colors.primary + '10', theme.colors.secondary + '05']}
-              style={styles.cardGradient}
-            >
-              <Card.Content style={styles.buddyContent}>
-                <View style={styles.buddyHeader}>
-                  <Title style={styles.buddyAvatar}>{item.avatar}</Title>
-                  <View style={styles.buddyInfo}>
-                    <Title style={styles.buddyName}>{item.name}</Title>
-                    <View style={styles.locationContainer}>
-                      <MaterialCommunityIcons 
-                        name="map-marker" 
-                        size={12} 
-                        color={theme.colors.primary} 
-                      />
-                      <Paragraph style={styles.buddyLocation}>{item.location}</Paragraph>
-                    </View>
-                    <View style={styles.ratingContainer}>
-                      <MaterialCommunityIcons name="star" size={14} color="#FFD700" />
-                      <Paragraph style={styles.ratingText}>{item.rating}</Paragraph>
-                      <Paragraph style={styles.tripsText}>({item.trips} trips)</Paragraph>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.nextTripContainer}>
-                  <Paragraph style={styles.nextTripLabel}>Next Adventure:</Paragraph>
-                  <Paragraph style={styles.nextTripText}>{item.nextTrip}</Paragraph>
-                </View>
-
-                <View style={styles.interestsContainer}>
-                  <Paragraph style={styles.interestsLabel}>Interests:</Paragraph>
-                  <View style={styles.interestsList}>
-                    {item.interests.map((interest: string, interestIndex: number) => (
-                      <Chip
-                        key={interestIndex}
-                        style={styles.interestChip}
-                        textStyle={styles.interestText}
-                      >
-                        {interest}
-                      </Chip>
-                    ))}
-                  </View>
-                </View>
-
-                <Button
-                  mode="contained"
-                  style={styles.connectButton}
-                  contentStyle={styles.buttonContent}
-                  labelStyle={styles.buttonLabel}
-                >
-                  Connect
-                </Button>
-              </Card.Content>
-            </LinearGradient>
-          </Card>
-        </TouchableOpacity>
-      </Animated.View>
-    );
+    return <TravelBuddyCard item={item} index={index} />;
   };
 
   return (

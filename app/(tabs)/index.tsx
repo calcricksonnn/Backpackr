@@ -84,12 +84,103 @@ const destinations = [
 ];
 
 const categories = [
-  { id: 1, name: "Mountains", icon: "mountain", color: "#2E7D32" },
-  { id: 2, name: "Beaches", icon: "beach", color: "#1976D2" },
+  { id: 1, name: "Mountains", icon: "image-filter-hdr", color: "#2E7D32" },
+  { id: 2, name: "Beaches", icon: "waves", color: "#1976D2" },
   { id: 3, name: "Cities", icon: "city", color: "#FF6F00" },
   { id: 4, name: "Desert", icon: "weather-sunny", color: "#F57C00" },
   { id: 5, name: "Forest", icon: "tree", color: "#388E3C" },
 ];
+
+const DestinationCard = ({ item, index }: { item: any; index: number }) => {
+  const theme = useTheme();
+  const cardScale = useSharedValue(0);
+  const cardOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    cardScale.value = withDelay(index * 100, withSpring(1));
+    cardOpacity.value = withDelay(index * 100, withTiming(1, { duration: 600 }));
+  }, []);
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardScale.value }],
+    opacity: cardOpacity.value,
+  }));
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Easy': return '#4CAF50';
+      case 'Medium': return '#FF9800';
+      case 'Hard': return '#F44336';
+      default: return theme.colors.primary;
+    }
+  };
+
+  return (
+    <Animated.View style={[styles.destinationCard, cardAnimatedStyle]}>
+      <TouchableOpacity activeOpacity={0.9}>
+        <Card style={styles.card} elevation={4}>
+          <LinearGradient
+            colors={[item.color + '20', item.color + '05']}
+            style={styles.cardGradient}
+          >
+            <Card.Content style={styles.cardContent}>
+              <View style={styles.cardHeader}>
+                <Title style={styles.destinationIcon}>{item.image}</Title>
+                <View style={styles.rating}>
+                  <MaterialCommunityIcons 
+                    name="star" 
+                    size={16} 
+                    color={theme.colors.primary} 
+                  />
+                  <Paragraph style={styles.ratingText}>{item.rating}</Paragraph>
+                </View>
+              </View>
+              
+              <Title style={styles.destinationName}>{item.name}</Title>
+              <Paragraph style={styles.destinationDescription}>
+                {item.description}
+              </Paragraph>
+              
+              <View style={styles.infoRow}>
+                <Chip
+                  icon="timer"
+                  style={[styles.infoChip, { backgroundColor: theme.colors.surfaceVariant }]}
+                  textStyle={styles.chipText}
+                >
+                  {item.duration}
+                </Chip>
+                <Chip
+                  icon="trending-up"
+                  style={[
+                    styles.infoChip, 
+                    { 
+                      backgroundColor: getDifficultyColor(item.difficulty) + '20',
+                    }
+                  ]}
+                  textStyle={[styles.chipText, { color: getDifficultyColor(item.difficulty) }]}
+                >
+                  {item.difficulty}
+                </Chip>
+              </View>
+              
+              <View style={styles.tagsContainer}>
+                {item.tags.map((tag: string, tagIndex: number) => (
+                  <Chip
+                    key={tagIndex}
+                    style={styles.tagChip}
+                    textStyle={styles.tagText}
+                  >
+                    {tag}
+                  </Chip>
+                ))}
+              </View>
+            </Card.Content>
+          </LinearGradient>
+        </Card>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 export default function ExploreScreen() {
   const theme = useTheme();
@@ -136,83 +227,8 @@ export default function ExploreScreen() {
   };
 
   const renderDestination = ({ item, index }: { item: any; index: number }) => {
-    const cardScale = useSharedValue(0);
-    const cardOpacity = useSharedValue(0);
-
-    useEffect(() => {
-      cardScale.value = withDelay(index * 100, withSpring(1));
-      cardOpacity.value = withDelay(index * 100, withTiming(1, { duration: 600 }));
-    }, []);
-
-    const cardAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: cardScale.value }],
-      opacity: cardOpacity.value,
-    }));
-
     return (
-      <Animated.View style={[styles.destinationCard, cardAnimatedStyle]}>
-        <TouchableOpacity activeOpacity={0.9}>
-          <Card style={styles.card} elevation={4}>
-            <LinearGradient
-              colors={[item.color + '20', item.color + '05']}
-              style={styles.cardGradient}
-            >
-              <Card.Content style={styles.cardContent}>
-                <View style={styles.cardHeader}>
-                  <Title style={styles.destinationIcon}>{item.image}</Title>
-                  <View style={styles.rating}>
-                    <MaterialCommunityIcons 
-                      name="star" 
-                      size={16} 
-                      color={theme.colors.primary} 
-                    />
-                    <Paragraph style={styles.ratingText}>{item.rating}</Paragraph>
-                  </View>
-                </View>
-                
-                <Title style={styles.destinationName}>{item.name}</Title>
-                <Paragraph style={styles.destinationDescription}>
-                  {item.description}
-                </Paragraph>
-                
-                <View style={styles.infoRow}>
-                  <Chip
-                    icon="timer"
-                    style={[styles.infoChip, { backgroundColor: theme.colors.surfaceVariant }]}
-                    textStyle={styles.chipText}
-                  >
-                    {item.duration}
-                  </Chip>
-                  <Chip
-                    icon="trending-up"
-                    style={[
-                      styles.infoChip, 
-                      { 
-                        backgroundColor: getDifficultyColor(item.difficulty) + '20',
-                      }
-                    ]}
-                    textStyle={[styles.chipText, { color: getDifficultyColor(item.difficulty) }]}
-                  >
-                    {item.difficulty}
-                  </Chip>
-                </View>
-                
-                <View style={styles.tagsContainer}>
-                  {item.tags.map((tag: string, tagIndex: number) => (
-                    <Chip
-                      key={tagIndex}
-                      style={styles.tagChip}
-                      textStyle={styles.tagText}
-                    >
-                      {tag}
-                    </Chip>
-                  ))}
-                </View>
-              </Card.Content>
-            </LinearGradient>
-          </Card>
-        </TouchableOpacity>
-      </Animated.View>
+      <DestinationCard item={item} index={index} />
     );
   };
 

@@ -81,9 +81,195 @@ const trips = [
 const stats = [
   { label: "Countries Visited", value: "12", icon: "earth", color: "#2E7D32" },
   { label: "Days Traveled", value: "156", icon: "calendar", color: "#FF6F00" },
-  { label: "Adventures", value: "8", icon: "mountain", color: "#1976D2" },
+  { label: "Adventures", value: "8", icon: "image-filter-hdr", color: "#1976D2" },
   { label: "Photos Taken", value: "2.4k", icon: "camera", color: "#9C27B0" },
 ];
+
+const StatComponent = ({ item, index }: { item: any; index: number }) => {
+  const statScale = useSharedValue(0);
+
+  useEffect(() => {
+    statScale.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withDelay(500 + index * 100, withSpring(1))
+    );
+  }, []);
+
+  const statAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: statScale.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.statItem, statAnimatedStyle]}>
+      <Surface style={styles.statSurface} elevation={3}>
+        <MaterialCommunityIcons
+          name={item.icon as any}
+          size={24}
+          color={item.color}
+        />
+        <Title style={[styles.statValue, { color: item.color }]}>
+          {item.value}
+        </Title>
+        <Paragraph style={styles.statLabel}>{item.label}</Paragraph>
+      </Surface>
+    </Animated.View>
+  );
+};
+
+const TripCard = ({ item, index }: { item: any; index: number }) => {
+  const theme = useTheme();
+  const cardScale = useSharedValue(0);
+  const cardOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    cardScale.value = withDelay(index * 150, withSpring(1));
+    cardOpacity.value = withDelay(index * 150, withTiming(1, { duration: 600 }));
+  }, []);
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardScale.value }],
+    opacity: cardOpacity.value,
+  }));
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return '#4CAF50';
+      case 'completed': return '#2196F3';
+      case 'planned': return '#FF9800';
+      default: return theme.colors.primary;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return 'play-circle';
+      case 'completed': return 'check-circle';
+      case 'planned': return 'clock-outline';
+      default: return 'circle';
+    }
+  };
+
+  return (
+    <Animated.View style={[styles.tripCard, cardAnimatedStyle]}>
+      <TouchableOpacity activeOpacity={0.9}>
+        <Card style={styles.card} elevation={4}>
+          <LinearGradient
+            colors={[item.color + '15', item.color + '05']}
+            style={styles.cardGradient}
+          >
+            <Card.Content style={styles.cardContent}>
+              <View style={styles.cardHeader}>
+                <View style={styles.destinationInfo}>
+                  <Title style={styles.tripIcon}>{item.image}</Title>
+                  <View>
+                    <Title style={styles.tripName}>{item.destination}</Title>
+                    <View style={styles.statusContainer}>
+                      <MaterialCommunityIcons
+                        name={getStatusIcon(item.status)}
+                        size={16}
+                        color={getStatusColor(item.status)}
+                      />
+                      <Paragraph style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+                        {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                      </Paragraph>
+                    </View>
+                  </View>
+                </View>
+                
+                {item.status === 'completed' && item.rating && (
+                  <View style={styles.rating}>
+                    <MaterialCommunityIcons name="star" size={16} color="#FFD700" />
+                    <Paragraph style={styles.ratingText}>{item.rating}</Paragraph>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.dateRange}>
+                <Paragraph style={styles.dateText}>
+                  {new Date(item.startDate).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}
+                </Paragraph>
+                <Paragraph style={styles.daysText}>
+                  {item.days} days
+                </Paragraph>
+              </View>
+
+              {item.status === 'active' && (
+                <View style={styles.progressContainer}>
+                  <View style={styles.progressHeader}>
+                    <Paragraph style={styles.progressLabel}>Progress</Paragraph>
+                    <Paragraph style={styles.progressText}>
+                      {item.completedDays}/{item.days} days
+                    </Paragraph>
+                  </View>
+                  <ProgressBar 
+                    progress={item.progress} 
+                    color={item.color}
+                    style={styles.progressBar}
+                  />
+                  <Paragraph style={styles.nextMilestone}>
+                    Next: {item.nextMilestone}
+                  </Paragraph>
+                </View>
+              )}
+
+              {item.status === 'planned' && item.preparation && (
+                <View style={styles.progressContainer}>
+                  <View style={styles.progressHeader}>
+                    <Paragraph style={styles.progressLabel}>Preparation</Paragraph>
+                    <Paragraph style={styles.progressText}>
+                      {Math.round(item.preparation * 100)}%
+                    </Paragraph>
+                  </View>
+                  <ProgressBar 
+                    progress={item.preparation} 
+                    color={item.color}
+                    style={styles.progressBar}
+                  />
+                </View>
+              )}
+
+              <View style={styles.highlightsContainer}>
+                <Paragraph style={styles.highlightsLabel}>Highlights:</Paragraph>
+                <View style={styles.highlightsList}>
+                  {item.highlights.map((highlight: string, highlightIndex: number) => (
+                    <Chip
+                      key={highlightIndex}
+                      style={styles.highlightChip}
+                      textStyle={styles.highlightText}
+                    >
+                      {highlight}
+                    </Chip>
+                  ))}
+                </View>
+              </View>
+
+              {item.status === 'active' && (
+                <View style={styles.actionButtons}>
+                  <Button
+                    mode="contained"
+                    style={[styles.actionButton, { backgroundColor: item.color }]}
+                    contentStyle={styles.buttonContent}
+                    labelStyle={styles.buttonLabel}
+                  >
+                    View Details
+                  </Button>
+                  <Button
+                    mode="outlined"
+                    style={[styles.actionButton, { borderColor: item.color }]}
+                    contentStyle={styles.buttonContent}
+                    labelStyle={[styles.buttonLabel, { color: item.color }]}
+                  >
+                    Add Entry
+                  </Button>
+                </View>
+              )}
+            </Card.Content>
+          </LinearGradient>
+        </Card>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 export default function TripsScreen() {
   const theme = useTheme();
@@ -110,191 +296,6 @@ export default function TripsScreen() {
     return trip.status === selectedFilter;
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return '#4CAF50';
-      case 'completed': return '#2196F3';
-      case 'planned': return '#FF9800';
-      default: return theme.colors.primary;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return 'play-circle';
-      case 'completed': return 'check-circle';
-      case 'planned': return 'clock-outline';
-      default: return 'circle';
-    }
-  };
-
-  const renderTrip = ({ item, index }: { item: any; index: number }) => {
-    const cardScale = useSharedValue(0);
-    const cardOpacity = useSharedValue(0);
-
-    useEffect(() => {
-      cardScale.value = withDelay(index * 150, withSpring(1));
-      cardOpacity.value = withDelay(index * 150, withTiming(1, { duration: 600 }));
-    }, []);
-
-    const cardAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: cardScale.value }],
-      opacity: cardOpacity.value,
-    }));
-
-    return (
-      <Animated.View style={[styles.tripCard, cardAnimatedStyle]}>
-        <TouchableOpacity activeOpacity={0.9}>
-          <Card style={styles.card} elevation={4}>
-            <LinearGradient
-              colors={[item.color + '15', item.color + '05']}
-              style={styles.cardGradient}
-            >
-              <Card.Content style={styles.cardContent}>
-                <View style={styles.cardHeader}>
-                  <View style={styles.destinationInfo}>
-                    <Title style={styles.tripIcon}>{item.image}</Title>
-                    <View>
-                      <Title style={styles.tripName}>{item.destination}</Title>
-                      <View style={styles.statusContainer}>
-                        <MaterialCommunityIcons
-                          name={getStatusIcon(item.status)}
-                          size={16}
-                          color={getStatusColor(item.status)}
-                        />
-                        <Paragraph style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                          {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                        </Paragraph>
-                      </View>
-                    </View>
-                  </View>
-                  
-                  {item.status === 'completed' && item.rating && (
-                    <View style={styles.rating}>
-                      <MaterialCommunityIcons name="star" size={16} color="#FFD700" />
-                      <Paragraph style={styles.ratingText}>{item.rating}</Paragraph>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.dateRange}>
-                  <Paragraph style={styles.dateText}>
-                    {new Date(item.startDate).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}
-                  </Paragraph>
-                  <Paragraph style={styles.daysText}>
-                    {item.days} days
-                  </Paragraph>
-                </View>
-
-                {item.status === 'active' && (
-                  <View style={styles.progressContainer}>
-                    <View style={styles.progressHeader}>
-                      <Paragraph style={styles.progressLabel}>Progress</Paragraph>
-                      <Paragraph style={styles.progressText}>
-                        {item.completedDays}/{item.days} days
-                      </Paragraph>
-                    </View>
-                    <ProgressBar 
-                      progress={item.progress} 
-                      color={item.color}
-                      style={styles.progressBar}
-                    />
-                    <Paragraph style={styles.nextMilestone}>
-                      Next: {item.nextMilestone}
-                    </Paragraph>
-                  </View>
-                )}
-
-                {item.status === 'planned' && item.preparation && (
-                  <View style={styles.progressContainer}>
-                    <View style={styles.progressHeader}>
-                      <Paragraph style={styles.progressLabel}>Preparation</Paragraph>
-                      <Paragraph style={styles.progressText}>
-                        {Math.round(item.preparation * 100)}%
-                      </Paragraph>
-                    </View>
-                    <ProgressBar 
-                      progress={item.preparation} 
-                      color={item.color}
-                      style={styles.progressBar}
-                    />
-                  </View>
-                )}
-
-                <View style={styles.highlightsContainer}>
-                  <Paragraph style={styles.highlightsLabel}>Highlights:</Paragraph>
-                  <View style={styles.highlightsList}>
-                    {item.highlights.map((highlight: string, highlightIndex: number) => (
-                      <Chip
-                        key={highlightIndex}
-                        style={styles.highlightChip}
-                        textStyle={styles.highlightText}
-                      >
-                        {highlight}
-                      </Chip>
-                    ))}
-                  </View>
-                </View>
-
-                {item.status === 'active' && (
-                  <View style={styles.actionButtons}>
-                    <Button
-                      mode="contained"
-                      style={[styles.actionButton, { backgroundColor: item.color }]}
-                      contentStyle={styles.buttonContent}
-                      labelStyle={styles.buttonLabel}
-                    >
-                      View Details
-                    </Button>
-                    <Button
-                      mode="outlined"
-                      style={[styles.actionButton, { borderColor: item.color }]}
-                      contentStyle={styles.buttonContent}
-                      labelStyle={[styles.buttonLabel, { color: item.color }]}
-                    >
-                      Add Entry
-                    </Button>
-                  </View>
-                )}
-              </Card.Content>
-            </LinearGradient>
-          </Card>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
-
-  const renderStat = ({ item, index }: { item: any; index: number }) => {
-    const statScale = useSharedValue(0);
-
-    useEffect(() => {
-      statScale.value = withSequence(
-        withTiming(0, { duration: 0 }),
-        withDelay(500 + index * 100, withSpring(1))
-      );
-    }, []);
-
-    const statAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: statScale.value }],
-    }));
-
-    return (
-      <Animated.View style={[styles.statItem, statAnimatedStyle]}>
-        <Surface style={styles.statSurface} elevation={3}>
-          <MaterialCommunityIcons
-            name={item.icon as any}
-            size={24}
-            color={item.color}
-          />
-          <Title style={[styles.statValue, { color: item.color }]}>
-            {item.value}
-          </Title>
-          <Paragraph style={styles.statLabel}>{item.label}</Paragraph>
-        </Surface>
-      </Animated.View>
-    );
-  };
-
   return (
     <View style={styles.container}>
       {/* Header with Stats */}
@@ -312,16 +313,13 @@ export default function TripsScreen() {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Stats Section */}
-        <Animated.View style={[styles.statsContainer, statsAnimatedStyle]}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={stats}
-            keyExtractor={(item) => item.label}
-            renderItem={renderStat}
-            contentContainerStyle={styles.statsList}
-          />
-        </Animated.View>
+        <View style={styles.statsContainer}>
+          <View style={styles.statsList}>
+            {stats.map((stat, index) => (
+              <StatComponent key={stat.label} item={stat} index={index} />
+            ))}
+          </View>
+        </View>
 
         {/* Filter Tabs */}
         <View style={styles.filterContainer}>
@@ -350,14 +348,11 @@ export default function TripsScreen() {
 
         {/* Trips List */}
         <View style={styles.tripsContainer}>
-          <FlatList
-            data={filteredTrips}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderTrip}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={false}
-            contentContainerStyle={styles.tripsList}
-          />
+          <View style={styles.tripsList}>
+            {filteredTrips.map((trip, index) => (
+              <TripCard key={trip.id} item={trip} index={index} />
+            ))}
+          </View>
         </View>
       </ScrollView>
 

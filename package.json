@@ -15,6 +15,7 @@
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^4.4.6",
     "@react-native-async-storage/async-storage": "^1.22.0",
+    "ajv": "^8.17.1",
     "dotenv": "^16.4.7",
     "eslint-config-react-native": "^4.1.0",
     "expo": "~53.0.20",
@@ -42,7 +43,8 @@
     "react-native-snap-carousel": "^4.0.0-beta.6",
     "react-native-svg": "15.11.2",
     "react-native-svg-transformer": "^1.5.1",
-    "victory-native": "^36.9.2"
+    "victory-native": "^36.9.2",
+    "react-native-web": "~0.20.0"
   },
   "devDependencies": {
     "@types/react": "~19.0.10",

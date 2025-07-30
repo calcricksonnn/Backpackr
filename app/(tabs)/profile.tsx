@@ -61,6 +61,75 @@ const userData = {
   ]
 };
 
+const StatItem = ({ label, value, icon, color, index }: { label: string; value: string | number; icon: string; color: string; index: number }) => {
+  const statScale = useSharedValue(0);
+
+  useEffect(() => {
+    statScale.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withDelay(600 + index * 100, withSpring(1))
+    );
+  }, []);
+
+  const statAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: statScale.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.statItem, statAnimatedStyle]}>
+      <Surface style={styles.statSurface} elevation={3}>
+        <MaterialCommunityIcons name={icon as any} size={24} color={color} />
+        <Title style={[styles.statValue, { color }]}>{value}</Title>
+        <Paragraph style={styles.statLabel}>{label}</Paragraph>
+      </Surface>
+    </Animated.View>
+  );
+};
+
+const AchievementItem = ({ achievement, index }: { achievement: any; index: number }) => {
+  const achievementScale = useSharedValue(0);
+
+  useEffect(() => {
+    achievementScale.value = withDelay(800 + index * 50, withSpring(1));
+  }, []);
+
+  const achievementAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: achievementScale.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.achievementItem, achievementAnimatedStyle]}>
+      <Surface
+        style={[
+          styles.achievementSurface,
+          {
+            backgroundColor: achievement.earned ? achievement.color + '20' : '#F5F5F5',
+            borderColor: achievement.earned ? achievement.color : '#E0E0E0',
+          }
+        ]}
+        elevation={achievement.earned ? 3 : 1}
+      >
+        <MaterialCommunityIcons
+          name={achievement.icon as any}
+          size={20}
+          color={achievement.earned ? achievement.color : '#BDBDBD'}
+        />
+        <Paragraph
+          style={[
+            styles.achievementText,
+            {
+              color: achievement.earned ? achievement.color : '#BDBDBD',
+              fontWeight: achievement.earned ? 'bold' : 'normal'
+            }
+          ]}
+        >
+          {achievement.name}
+        </Paragraph>
+      </Surface>
+    </Animated.View>
+  );
+};
+
 export default function ProfileScreen() {
   const theme = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -89,72 +158,11 @@ export default function ProfileScreen() {
   }));
 
   const renderStat = (label: string, value: string | number, icon: string, color: string, index: number) => {
-    const statScale = useSharedValue(0);
-
-    useEffect(() => {
-      statScale.value = withSequence(
-        withTiming(0, { duration: 0 }),
-        withDelay(600 + index * 100, withSpring(1))
-      );
-    }, []);
-
-    const statAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: statScale.value }],
-    }));
-
-    return (
-      <Animated.View key={label} style={[styles.statItem, statAnimatedStyle]}>
-        <Surface style={styles.statSurface} elevation={3}>
-          <MaterialCommunityIcons name={icon as any} size={24} color={color} />
-          <Title style={[styles.statValue, { color }]}>{value}</Title>
-          <Paragraph style={styles.statLabel}>{label}</Paragraph>
-        </Surface>
-      </Animated.View>
-    );
+    return <StatItem key={label} label={label} value={value} icon={icon} color={color} index={index} />;
   };
 
   const renderAchievement = (achievement: any, index: number) => {
-    const achievementScale = useSharedValue(0);
-
-    useEffect(() => {
-      achievementScale.value = withDelay(800 + index * 50, withSpring(1));
-    }, []);
-
-    const achievementAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: achievementScale.value }],
-    }));
-
-    return (
-      <Animated.View key={achievement.id} style={[styles.achievementItem, achievementAnimatedStyle]}>
-        <Surface
-          style={[
-            styles.achievementSurface,
-            {
-              backgroundColor: achievement.earned ? achievement.color + '20' : '#F5F5F5',
-              borderColor: achievement.earned ? achievement.color : '#E0E0E0',
-            }
-          ]}
-          elevation={achievement.earned ? 3 : 1}
-        >
-          <MaterialCommunityIcons
-            name={achievement.icon as any}
-            size={20}
-            color={achievement.earned ? achievement.color : '#BDBDBD'}
-          />
-          <Paragraph
-            style={[
-              styles.achievementText,
-              {
-                color: achievement.earned ? achievement.color : '#BDBDBD',
-                fontWeight: achievement.earned ? 'bold' : 'normal'
-              }
-            ]}
-          >
-            {achievement.name}
-          </Paragraph>
-        </Surface>
-      </Animated.View>
-    );
+    return <AchievementItem key={achievement.id} achievement={achievement} index={index} />;
   };
 
   return (
